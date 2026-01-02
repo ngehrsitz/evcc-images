@@ -388,9 +388,6 @@ I2CRULE
 # ============================================================================
 echo "[customize-image] setting up cockpit"
 
-# Add 45Drives repository for cockpit-navigator
-curl -sSL https://repo.45drives.com/setup | bash
-
 # Add AllStarLink repository for cockpit-wifimanager
 curl -L -o /tmp/asl-apt-repos.deb13_all.deb \
 	"https://repo.allstarlink.org/public/asl-apt-repos.deb13_all.deb"
@@ -403,7 +400,6 @@ rm -f /tmp/asl-apt-repos.deb13_all.deb
 apt-get install -y --no-install-recommends cockpit \
 	packagekit cockpit-packagekit \
 	cockpit-networkmanager \
-	cockpit-navigator \
 	cockpit-wifimanager
 
 # Cockpit configuration
