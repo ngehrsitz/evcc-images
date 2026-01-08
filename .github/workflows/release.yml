@@ -30,7 +30,7 @@ on:
 
 jobs:
   prepare:
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-slim
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       release_name: ${{ steps.release-name.outputs.name }}
@@ -127,7 +127,7 @@ jobs:
 
   build:
     needs: prepare
-    runs-on: depot-ubuntu-24.04-arm-32
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 360
     strategy:
       fail-fast: false
@@ -212,7 +212,7 @@ jobs:
 
   finalize:
     needs: [prepare, build]
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-slim
     if: success() && needs.prepare.outputs.is_draft != 'true'
     steps:
       - name: Publish release
@@ -224,7 +224,7 @@ jobs:
 
   cleanup:
     needs: [prepare, build]
-    runs-on: depot-ubuntu-24.04-arm
+    runs-on: ubuntu-slim
     if: failure() && needs.prepare.outputs.is_draft != 'true'
     steps:
       - name: Delete failed release
