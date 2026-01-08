@@ -24,10 +24,8 @@ fi
 export EVCC_HOSTNAME=${EVCC_HOSTNAME:-evcc}
 export TIMEZONE=${TIMEZONE:-Europe/Berlin}
 export DEBIAN_FRONTEND=noninteractive
-export OPENWB=${OPENWB:-false}
-export OPENWB_DISPLAY=${OPENWB_DISPLAY:-false}
 
-echo "[customize-image] hostname=$EVCC_HOSTNAME tz=$TIMEZONE openwb=$OPENWB display=$OPENWB_DISPLAY"
+echo "[customize-image] hostname=$EVCC_HOSTNAME tz=$TIMEZONE board=$BOARD"
 
 # ============================================================================
 # SYSTEM SETUP
@@ -233,7 +231,7 @@ NMCONF
 # ============================================================================
 # Setup for OpenWB with display
 # ============================================================================
-if [[ "$OPENWB_DISPLAY" == "true" ]]; then
+if [[ "$BOARD" == "openwb-display" ]]; then
 	echo "[customize-image] OpenWB with display customizations"
 	apt-get install -y --no-install-recommends labwc wayfire seatd xdg-user-dirs firefox-esr swayidle wlopm
 
@@ -287,7 +285,7 @@ cat >/etc/systemd/system/evcc.service.d/override.conf <<-EVCCCONF
 Environment="EVCC_NETWORK_HOST=${EVCC_HOSTNAME}.local"
 EVCCCONF
 
-if [[ "$OPENWB" == "true" ]]; then
+if [[ "$BOARD" =~ ^openwb.*  ]]; then
 	cat >>/etc/evcc.yaml.example <<-YAML
 	network:
 	  schema: https

@@ -11,8 +11,6 @@ REPO_ROOT=$(cd -- "${SCRIPT_DIR}/.." && pwd)
 BOARD=""
 HOSTNAME="evcc"
 RELEASE_NAME="local"
-OPENWB="false"
-OPENWB_DISPLAY="false"
 
 usage() {
   cat <<EOF
@@ -60,19 +58,10 @@ cleanup() {
 trap cleanup EXIT
 mkdir -p "$BUILDTMP/userpatches/overlay/"
 
-if [[ "$BOARD" =~ ^openwb.* ]]; then
-  OPENWB="true"
-fi
-
-if [[ "$BOARD" == "openwb-display" ]]; then
-  OPENWB_DISPLAY="true"
-fi
-
 # Exported to the chroot via /tmp/overlay/evcc-image.env
 cat >"$BUILDTMP/userpatches/overlay/evcc-image.env" <<ENV
 EVCC_HOSTNAME=${HOSTNAME}
-OPENWB=${OPENWB}
-OPENWB_DISPLAY=${OPENWB_DISPLAY}
+BOARD=${BOARD}
 ENV
 
 # Copy our customize script and auxiliary files
