@@ -73,7 +73,7 @@ groupadd --system gpio
 
 # Create admin user with initial password and require password change on first login
 if ! id -u admin >/dev/null 2>&1; then
-	useradd -s /bin/bash --create-home -G sudo,netdev admin 
+	useradd -s /bin/bash --create-home -G sudo,netdev admin
 	echo 'admin:admin' | chpasswd
 fi
 
@@ -179,7 +179,7 @@ else
 		systemctl kill comitup.service 2>&1 || true
 		sleep 2
 	}
-		
+
 	# Reset any failed state before disabling
 	systemctl reset-failed comitup.service 2>&1 || true
 
@@ -193,7 +193,7 @@ else
 		nmcli connection down "$HOTSPOT_CONN" 2>/dev/null || true
 		nmcli connection delete "$HOTSPOT_CONN" 2>/dev/null || true
 	fi
-		
+
 	echo "Internet available - WiFi setup stopped"
 fi
 WIFISETUP
@@ -231,7 +231,7 @@ interval=300
 NMCONF
 
 # ============================================================================
-# Setup for OpenWB with display 
+# Setup for OpenWB with display
 # ============================================================================
 if [[ "$OPENWB_DISPLAY" == "true" ]]; then
 	echo "[customize-image] OpenWB with display customizations"
@@ -259,7 +259,7 @@ if [[ "$OPENWB_DISPLAY" == "true" ]]; then
 	# Enable auto-start of kiosk mode
 	mkdir -p /home/admin/.config/systemd/user/default.target.wants
 	ln -sf /home/admin/.config/systemd/user/kiosk.service /home/admin/.config/systemd/user/default.target.wants/kiosk.service
-	
+
 	# Fake loginctl enable-linger admin
 	mkdir -p /var/lib/systemd/linger/
 	touch /var/lib/systemd/linger/admin

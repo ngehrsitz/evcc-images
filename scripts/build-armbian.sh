@@ -101,7 +101,7 @@ find "$BUILD_DIR/patch" \( -name "*verisilicon*" -o -name "*rkvdec*" \) -type f 
 echo "Starting build for board=${BOARD} release=trixie release_name=${RELEASE_NAME} using Armbian build"
 
 pushd "$BUILD_DIR" >/dev/null
-  ./compile.sh $BOARD 
+  ./compile.sh $BOARD
 popd >/dev/null
 
 # Copy results to output directory
