@@ -60,9 +60,9 @@ jobs:
           # Emit a matrix of {board, runner, asset_name} objects from the registry.
           MATRIX=$(for b in "${boards[@]}"; do
             if [[ "$b" == "uefi-x86" ]]; then
-              runner="depot-ubuntu-24.04-32"
+              runner="ubuntu-24.04"
             else
-              runner="depot-ubuntu-24.04-arm-32"
+              runner="ubuntu-24.04-arm"
             fi
             jq -n \
               --arg board "$b" \
