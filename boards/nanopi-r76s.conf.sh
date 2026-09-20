@@ -1,0 +1,3 @@
+# DESCRIPTION: FriendlyELEC NanoPi R76S
+BOARD_ARMBIAN="nanopi-r76s"
+KERNEL_BRANCH="vendor"

@@ -14,6 +14,7 @@ on:
         required: true
         default: "all"
         type: choice
+        # keep in sync with boards/*.conf.sh
         options:
           - all
           - rpi
@@ -40,21 +41,36 @@ jobs:
       - name: Compute matrix
         id: set-matrix
         run: |
-          # For scheduled runs, build all boards
-          if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            MATRIX='["rpi","nanopi-r3s","nanopi-zero2","nanopi-r76s"]'
+          set -euo pipefail
+          source scripts/lib/boards.sh
+
+          # Determine which boards to build
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.board }}" == "all" ]]; then
+            mapfile -t boards < <(boards_list)
           else
             choice='${{ inputs.board }}'
-            case "$choice" in
-              all)      MATRIX='["rpi","nanopi-r3s","nanopi-zero2","nanopi-r76s"]' ;;
-              rpi) MATRIX='["rpi"]' ;;
-              nanopi-r3s) MATRIX='["nanopi-r3s"]' ;;
-              nanopi-zero2) MATRIX='["nanopi-zero2"]' ;;
-              nanopi-r76s) MATRIX='["nanopi-r76s"]' ;;
-              *) echo "Unknown board: $choice" >&2; exit 1 ;;
-            esac
+            if ! boards_validate "$choice"; then
+              echo "Unknown board: $choice" >&2
+              exit 1
+            fi
+            boards=("$choice")
           fi
-          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+          # Emit a matrix of {board, runner, asset_name} objects from the registry.
+          MATRIX=$(for b in "${boards[@]}"; do
+            if [[ "$b" == "uefi-x86" ]]; then
+              runner="depot-ubuntu-24.04-32"
+            else
+              runner="depot-ubuntu-24.04-arm-32"
+            fi
+            jq -n \
+              --arg board "$b" \
+              --arg runner "$runner" \
+              --arg asset_name "$(boards_asset_name "$b")" \
+              '{board: $board, runner: $runner, asset_name: $asset_name}'
+          done | jq -c -s '{include: .}')
+
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
 
       - name: Generate release name
         id: release-name
@@ -97,12 +113,11 @@ jobs:
 
   build:
     needs: prepare
-    runs-on: depot-ubuntu-24.04-arm-32
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 360
     strategy:
       fail-fast: false
-      matrix:
-        board: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     name: Build ${{ matrix.board }}
     steps:
       - name: Checkout
@@ -150,23 +165,12 @@ jobs:
           echo "sha_file=$(find dist -name "*.img.sha" -type f)" >> $GITHUB_OUTPUT
           echo "txt_file=$(find dist -name "*.img.txt" -type f)" >> $GITHUB_OUTPUT
 
-      # Version-free, descriptive asset names so that
-      # https://github.com/evcc-io/images/releases/latest/download/<asset> always
-      # resolves to the latest release. The .img inside the zip keeps the version.
-      - name: Compute asset name
-        id: asset-name
-        run: |
-          case "${{ matrix.board }}" in
-            rpi) echo "board=raspberry-pi" >> $GITHUB_OUTPUT ;;
-            *) echo "board=${{ matrix.board }}" >> $GITHUB_OUTPUT ;;
-          esac
-
       - name: Upload assets to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          asset="evcc_${{ steps.asset-name.outputs.board }}"
+          asset="evcc_${{ matrix.asset_name }}"
 
           # gh release upload does not support changing the filename
           mv "${{ steps.find-files.outputs.img_zip }}" "dist/${asset}.img.zip"

@@ -8,6 +8,10 @@ set -euo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 REPO_ROOT=$(cd -- "${SCRIPT_DIR}/.." && pwd)
 
+# Board registry: single source of truth for board -> armbian board / kernel branch / etc.
+# shellcheck source=lib/boards.sh
+source "${SCRIPT_DIR}/lib/boards.sh"
+
 BOARD=""
 HOSTNAME="evcc"
 RELEASE_NAME="local"
@@ -20,7 +24,7 @@ Examples:
   $0 --board rpi
   $0 --board nanopi-r3s --release-name 2025-01
 
-Supported boards: rpi, nanopi-r3s, nanopi-zero2, nanopi-r76s
+Supported boards: $(boards_list_inline)
 EOF
 }
 
@@ -39,17 +43,15 @@ if [[ -z "$BOARD" ]]; then
   exit 2
 fi
 
-# Map user-facing board names to Armbian internal board names
-case "$BOARD" in
-  rpi) ARMBIAN_BOARD="rpi4b" ;;
-  *) ARMBIAN_BOARD="$BOARD" ;;
-esac
+if ! boards_validate "$BOARD"; then
+  echo "Unsupported board: '$BOARD'" >&2
+  echo "Supported boards: $(boards_list_inline)" >&2
+  exit 2
+fi
 
-# Map boards to kernel branch (vendor kernel for SoCs without mainline support)
-case "$BOARD" in
-  nanopi-zero2|nanopi-r76s) KERNEL_BRANCH="vendor" ;;
-  *) KERNEL_BRANCH="current" ;;
-esac
+# Resolve per-board settings from the registry
+ARMBIAN_BOARD=$(boards_armbian "$BOARD")
+KERNEL_BRANCH=$(boards_kernel_branch "$BOARD")
 
 mkdir -p "$REPO_ROOT/dist" "$REPO_ROOT/logs"
 
@@ -75,9 +77,6 @@ ENV
 # Copy our customize script and auxiliary files
 cp -a "$REPO_ROOT/userpatches/." "$BUILDTMP/userpatches/"
 chmod +x "$BUILDTMP/userpatches/customize-image.sh" || true
-
-IMAGE_OUT_DIR="$REPO_ROOT/dist/${ARMBIAN_BOARD}"
-mkdir -p "$IMAGE_OUT_DIR"
 
 # Clone Armbian build framework and run it in Docker mode (it will build its own container image).
 # On macOS, Armbian requires the build directory to be under the home directory

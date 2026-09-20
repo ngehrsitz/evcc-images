@@ -1,0 +1,3 @@
+# DESCRIPTION: FriendlyELEC NanoPi R3S
+BOARD_ARMBIAN="nanopi-r3s"
+KERNEL_BRANCH="current"

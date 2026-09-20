@@ -8,6 +8,10 @@ set -euo pipefail
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 REPO_ROOT="$SCRIPT_DIR"
 
+# Board registry: single source of truth for supported boards
+# shellcheck source=scripts/lib/boards.sh
+source "$SCRIPT_DIR/scripts/lib/boards.sh"
+
 BOARD=""
 
 usage() {
@@ -17,17 +21,14 @@ Usage: $0 --board <board>
 Build evcc images locally using Docker (mimics GitHub Actions workflow)
 
 Arguments:
-  --board <board>      Target board (rpi, nanopi-r3s, nanopi-zero2, nanopi-r76s)
+  --board <board>      Target board ($(boards_list_inline))
 
 Examples:
   ./build-local.sh --board rpi
   ./build-local.sh --board nanopi-r3s
 
 Supported boards:
-  - rpi            Raspberry Pi
-  - nanopi-r3s     NanoPi R3S
-  - nanopi-zero2   NanoPi Zero2
-  - nanopi-r76s    NanoPi R76S
+$(boards_describe_table)
 
 EOF
 }
@@ -58,16 +59,13 @@ check_requirements() {
 }
 
 validate_board() {
-  case "$BOARD" in
-    rpi|nanopi-r3s|nanopi-zero2|nanopi-r76s)
-      echo "✅ Board '$BOARD' is supported"
-      ;;
-    *)
-      echo "❌ Unsupported board: '$BOARD'"
-      echo "Supported boards: rpi, nanopi-r3s, nanopi-zero2, nanopi-r76s"
-      exit 1
-      ;;
-  esac
+  if boards_validate "$BOARD"; then
+    echo "✅ Board '$BOARD' is supported"
+  else
+    echo "❌ Unsupported board: '$BOARD'"
+    echo "Supported boards: $(boards_list_inline)"
+    exit 1
+  fi
 }
 
 
