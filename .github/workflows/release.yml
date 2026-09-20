@@ -36,7 +36,7 @@ jobs:
       is_draft: ${{ steps.set-draft.outputs.is_draft }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Compute matrix
         id: set-matrix
@@ -116,7 +116,7 @@ jobs:
     name: Build ${{ matrix.board }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare Docker and workspace
         run: |
