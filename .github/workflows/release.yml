@@ -21,6 +21,7 @@ on:
           - nanopi-r3s
           - nanopi-zero2
           - nanopi-r76s
+          - uefi-x86
       draft:
         description: "Create as draft release for testing"
         required: false

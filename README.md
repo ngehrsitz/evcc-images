@@ -58,6 +58,11 @@ The links below always point to the latest release. Older versions and build log
   - WiFi setup: via USB adapter ([see below](#network-recommendations))
   - Storage: SD or eMMC ([see instructions](https://docs.armbian.com/User-Guide_Getting-Started/#installation))
 
+- **Generic UEFI x86** (mini-PC, thin client, or virtual machine)
+  - Image: [evcc_uefi-x86.img.zip](https://github.com/evcc-io/images/releases/latest/download/evcc_uefi-x86.img.zip) ([checksum](https://github.com/evcc-io/images/releases/latest/download/evcc_uefi-x86.img.sha))
+  - WiFi setup: via USB adapter ([see below](#network-recommendations))
+  - Storage: any UEFI-bootable disk (SATA/NVMe/USB)
+
 ## Available Services
 
 | Service    | Port | Protocol | URL                                 | Note                           |
